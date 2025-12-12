@@ -10,12 +10,6 @@ python main.py
 ```
 Defaults: `PORT=8000`, `HOST=0.0.0.0`, `MAX_N=10000`.
 
-or as Docker:
-```bash
-    docker build -t fib-ui:local python
-    docker run -p 8000:8000 fib-ui:local
-```
-
 ## API
 - `GET /fib?n=<n>` returns JSON: `{"n": 6, "sequence": [0,1,1,2,3,5]}`
 - `GET /healthz`, `GET /readyz` return `{"status":"ok"}` for probes
@@ -24,7 +18,7 @@ or as Docker:
 ## Tests and checks
 ```bash
 cd python
-python -m pip install -r requirements-dev.txt
+python -m pip install -r requirements.txt
 pytest -q
 ruff check .
 ```
