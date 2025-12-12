@@ -1,9 +1,11 @@
 import os
 import threading
 import time
+
 import requests
 
 from main import create_server
+
 
 def _start_server():
   httpd = create_server("127.0.0.1", 0)
