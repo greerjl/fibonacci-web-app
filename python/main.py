@@ -5,7 +5,6 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-
 # Static assets and docs are resolved relative to this file location so the server
 # works consistently in Docker, local dev, and tests.
 STATIC_DIR = Path(__file__).parent / "static"

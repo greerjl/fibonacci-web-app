@@ -1,7 +1,7 @@
 import pytest
 
 # Unit tests for the pure Fibonacci generator to lock in its contract.
-from main import fibonacci_first_n
+from python.main import fibonacci_first_n
 
 
 def test_fibonacci_n1():

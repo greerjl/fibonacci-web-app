@@ -1,13 +1,10 @@
-import os
 import threading
 import time
-from http.server import HTTPServer
 
 import requests
-import pytest
 
 # HTTP integration-ish tests that spin up the local server and exercise routes.
-from main import GetFibs, create_server
+from python.main import create_server
 
 
 def _start_server():
