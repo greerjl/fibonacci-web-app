@@ -1,13 +1,48 @@
-# Default values for chart.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
+replicaCount: 2
 
-# replicaCount: 1
+image:
+  repository: ghcr.io/<org>/<repo>
+  tag: "latest"
+  pullPolicy: IfNotPresent
 
-# image:
-#   repository:
-#   pullPolicy:
-#   tag:
+service:
+  type: ClusterIP
+  port: 8000
 
-# service:
-#   port: 8000
+env:
+  PORT: "8000"
+  MAX_N: "10000"
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 250m
+    memory: 256Mi
+
+ingress:
+  enabled: false
+
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  # targetMemoryUtilizationPercentage: 75
+
+  # Optional: fine-tune scaling behavior (autoscaling/v2)
+  # behavior:
+  #   scaleUp:
+  #     stabilizationWindowSeconds: 0
+  #     policies:
+  #       - type: Percent
+  #         value: 100
+  #         periodSeconds: 60
+  #   scaleDown:
+  #     stabilizationWindowSeconds: 300
+  #     policies:
+  #       - type: Percent
+  #         value: 50
+  #         periodSeconds: 60
+
