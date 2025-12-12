@@ -99,7 +99,6 @@ jobs:
           cache: pip
           cache-dependency-path: |
             python/requirements.txt
-            python/requirements-.txt
 
       - name: Install dependencies
         working-directory: python
