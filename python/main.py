@@ -89,7 +89,7 @@ class GetFibs(BaseHTTPRequestHandler):
       return _json(self, 200, {"status": "ok"})
 
     # Only accept the documented paths.
-    if parsed.path not in ("/", "/fib"):
+    if parsed.path != "/fib":
       return _json(self, 404, {"error": "not found"})
 
     params = parse_qs(parsed.query)
@@ -107,7 +107,11 @@ class GetFibs(BaseHTTPRequestHandler):
       return _json(self, 400, {"error": "n must be a positive integer"})
 
     # MAX_N caps CPU work per request to keep the service predictable.
-    max_n = int(os.getenv("MAX_N", "10000"))
+    try:
+      max_n = int(os.getenv("MAX_N", "10000"))
+    except ValueError:
+      max_n = 10000
+
     if n > max_n:
       return _json(self, 422, {"error": f"n must be <= {max_n}", "max_n": max_n})
 
@@ -133,6 +137,4 @@ def create_server(host: str, port: int):
   return HTTPServer((host, port), GetFibs)
 
 if __name__ == "__main__":
-  port = int(os.getenv("PORT", "8000"))
-  httpd = create_server("0.0.0.0", port)
-  httpd.serve_forever()
+  main()
