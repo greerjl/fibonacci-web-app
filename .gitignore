@@ -1,0 +1,14 @@
+# macOS Finder artifacts
+.DS_Store
+*/.DS_Store
+
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+.venv/
+venv/
+
+# Pytest cache
+.pytest_cache/
