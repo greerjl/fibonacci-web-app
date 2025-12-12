@@ -1,0 +1,58 @@
+flowchart LR
+%% Client
+C([Client])
+
+
+%% Kubernetes
+subgraph K8S[Kubernetes Cluster]
+SVC[Service\nClusterIP]
+
+
+subgraph DEP[Deployment: fibonacci]
+POD1[Pod]
+POD2[Pod]
+POD3[Pod]
+end
+
+
+HPA[HPA\nCPU based]
+end
+
+
+%% Application
+APP[Python HTTP Server\nGET /?n=\<int\>]
+HZ[/healthz/]
+RZ[/readyz/]
+
+
+%% CI/CD
+CI[GitHub Actions\nCI]
+REL[Git tag vX.Y.Z]
+GHCR[(GHCR\nImages + Helm charts)]
+
+
+%% Traffic flow
+C --> SVC
+SVC --> POD1
+SVC --> POD2
+SVC --> POD3
+
+
+%% Pod internals
+POD1 --> APP
+POD2 --> APP
+POD3 --> APP
+
+
+POD1 --> HZ
+POD1 --> RZ
+
+
+%% Scaling
+HPA -. scales replicas .-> DEP
+
+
+%% Delivery
+CI -->|lint, test, scan| REL
+REL -->|publish| GHCR
+GHCR -. pulled by .-> DEP
