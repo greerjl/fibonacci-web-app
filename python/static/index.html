@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fibonacci Generator</title>
+  <style>
+    :root {
+      --bg: radial-gradient(circle at 20% 20%, #0f172a, #0b1221 40%, #0a0f1c 75%);
+      --card: rgba(255, 255, 255, 0.07);
+      --border: rgba(255, 255, 255, 0.12);
+      --accent: #7dd3fc;
+      --accent-strong: #38bdf8;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --error: #f87171;
+      font-family: "Manrope", "Segoe UI", "Helvetica Neue", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text);
+      padding: 24px;
+    }
+    .layout {
+      display: grid;
+      gap: 16px;
+      width: min(560px, 96vw);
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.35);
+      backdrop-filter: blur(8px);
+      transition: transform 120ms ease, border-color 120ms ease;
+    }
+    .card:hover { transform: translateY(-2px); border-color: rgba(125, 211, 252, 0.4); }
+    h1 {
+      margin: 0 0 12px;
+      letter-spacing: 0.3px;
+      font-size: 24px;
+    }
+    p { margin: 0 0 18px; color: var(--muted); line-height: 1.5; }
+    label { display: block; font-weight: 600; margin-bottom: 8px; }
+    input[type="number"] {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: rgba(15, 23, 42, 0.6);
+      color: var(--text);
+      font-size: 16px;
+    }
+    button {
+      margin-top: 12px;
+      width: 100%;
+      padding: 12px 16px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      color: #0b1221;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+      transition: transform 120ms ease, box-shadow 120ms ease;
+      box-shadow: 0 10px 30px rgba(56, 189, 248, 0.35);
+    }
+    button:disabled { opacity: 0.6; cursor: not-allowed; box-shadow: none; }
+    button:hover:not(:disabled) { transform: translateY(-1px); }
+    .result, .error {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 10px;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid var(--border);
+      word-break: break-word;
+    }
+    .error { border-color: rgba(248, 113, 113, 0.5); color: var(--error); }
+    .meta { margin-top: 10px; font-size: 13px; color: var(--muted); display: flex; gap: 8px; }
+    .pill { padding: 4px 8px; border-radius: 999px; border: 1px solid var(--border); background: rgba(255, 255, 255, 0.04); }
+    .fun-card h2 { margin: 0 0 6px; font-size: 20px; }
+    .fun-sub { margin: 0 0 12px; color: var(--muted); }
+    .fun-img { width: 100%; border-radius: 12px; border: 1px solid var(--border); background: rgba(255,255,255,0.04); }
+  </style>
+</head>
+<body>
+  <!-- Layout contains the generator and the fun fact card. -->
+  <main class="layout">
+    <section class="card">
+      <h1>Fibonacci Generator</h1>
+      <p>Enter how many Fibonacci numbers to generate. Input must be a positive integer.</p>
+      <form id="fib-form">
+        <label for="n">How many numbers?</label>
+        <input id="n" name="n" type="number" min="1" step="1" placeholder="e.g. 6" required />
+        <button id="submit" type="submit">Generate</button>
+      </form>
+      <div class="result" id="result" hidden></div>
+      <div class="error" id="error" hidden></div>
+      <div class="meta">
+        <span class="pill">API: GET /fib?n=&lt;n&gt;</span>
+        <span class="pill">Health: /healthz</span>
+        <span class="pill">Ready: /readyz</span>
+      </div>
+    </section>
+
+    <!-- Fun fact is hidden by default and revealed on successful generation. -->
+    <section class="card fun-card" id="fun-card" hidden>
+      <h2>Did you know?</h2>
+      <p class="fun-sub">You can use Fibonacci numbers to approximately convert miles into kilometers.</p>
+      <img class="fun-img" src="/fun-fact.png" alt="Fibonacci fun fact chart showing miles to kilometers" />
+    </section>
+  </main>
+  <script>
+    // Cache DOM nodes once; avoids repeated lookups on each submit.
+    const form = document.getElementById("fib-form");
+    const input = document.getElementById("n");
+    const resultEl = document.getElementById("result");
+    const errorEl = document.getElementById("error");
+    const submitBtn = document.getElementById("submit");
+    const funCard = document.getElementById("fun-card");
+
+    // Centralized UI state updates for result/error/loading.
+    function setStatus({ result = "", error = "", loading = false }) {
+      if (result) {
+        resultEl.textContent = result;
+        resultEl.hidden = false;
+      } else {
+        resultEl.hidden = true;
+      }
+      if (error) {
+        errorEl.textContent = error;
+        errorEl.hidden = false;
+      } else {
+        errorEl.hidden = true;
+      }
+      submitBtn.disabled = loading;
+      submitBtn.textContent = loading ? "Loading..." : "Generate";
+      // Fun fact only shows after a successful generation to keep focus on the result.
+      funCard.hidden = !result;
+    }
+
+    // Submit handler: client-side validation, API call, render response.
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const n = input.valueAsNumber;
+      // Guard invalid input before hitting the server.
+      if (!Number.isInteger(n) || n <= 0) {
+        setStatus({ error: "Please enter a positive integer." });
+        return;
+      }
+
+      setStatus({ result: "", error: "", loading: true });
+      try {
+        // Call backend: expects JSON { n, sequence } on success, { error } on failure.
+        const resp = await fetch(`/fib?n=${encodeURIComponent(n)}`);
+        const body = await resp.json().catch(() => ({}));
+        if (!resp.ok) {
+          const msg = body.error || `Request failed with status ${resp.status}`;
+          setStatus({ error: msg });
+          return;
+        }
+        if (!body.sequence || !Array.isArray(body.sequence)) {
+          setStatus({ error: "Unexpected response from server." });
+          return;
+        }
+        setStatus({ result: body.sequence.join(", ") });
+      } catch (err) {
+        setStatus({ error: "Network error. Please try again." });
+        console.error(err);
+      }
+    });
+  </script>
+</body>
+</html>
