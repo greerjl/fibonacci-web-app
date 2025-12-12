@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - "v*"
+      - 'v*'
 
 permissions:
   contents: read
@@ -98,7 +98,7 @@ jobs:
         shell: bash
         run: |
           helm push dist/*.tgz oci://ghcr.io/${{ github.repository }}/charts
-      
+
       - name: Verify published chart renders
         shell: bash
         run: |
@@ -106,4 +106,3 @@ jobs:
             --version "${{ steps.tag.outputs.VERSION_NO_V }}" \
             --untar
           helm template fib ./fibonacci
-

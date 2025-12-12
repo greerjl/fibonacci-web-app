@@ -2,7 +2,7 @@ replicaCount: 2
 
 image:
   repository: ghcr.io/<org>/<repo>
-  tag: "latest"
+  tag: 'latest'
   pullPolicy: IfNotPresent
 
 service:
@@ -10,8 +10,8 @@ service:
   port: 8000
 
 env:
-  PORT: "8000"
-  MAX_N: "10000"
+  PORT: '8000'
+  MAX_N: '10000'
 
 resources:
   requests:
@@ -45,4 +45,3 @@ autoscaling:
   #       - type: Percent
   #         value: 50
   #         periodSeconds: 60
-
